@@ -28,3 +28,15 @@ TEST(StringUtilsTest, CountVowels) {
 TEST(StringUtilsTest, CountVowelsInTextWithoutVowels) {
     EXPECT_EQ(count_vowels("xyz"), 0);
 }
+
+TEST(StringUtilsTest, EmptyStringToUppercase) {
+    EXPECT_EQ(to_uppercase(""), "");
+}
+
+TEST(StringUtilsTest, EmptyStringIsPalindrome) {
+    EXPECT_TRUE(is_palindrome(""));
+}
+
+TEST(StringUtilsTest, SingleLetterIsPalindrome) {
+    EXPECT_TRUE(is_palindrome("a"));
+}

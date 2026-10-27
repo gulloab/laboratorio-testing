@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vector>
+#include <stdexcept>
 #include "grade_utils.h"
 
 TEST(GradeUtilsTest, CalculateAverage) {
@@ -42,4 +43,39 @@ TEST(GradeUtilsTest, LetterGradeF) {
 
 TEST(GradeUtilsTest, InvalidGradeThrowsException) {
     EXPECT_THROW(letter_grade(120), std::invalid_argument);
+}
+
+
+
+
+TEST(GradeUtilsTest, MinimumValidGrade) {
+    EXPECT_EQ(letter_grade(0), 'F');
+}
+
+TEST(GradeUtilsTest, MaximumValidGrade) {
+    EXPECT_EQ(letter_grade(100), 'A');
+}
+
+TEST(GradeUtilsTest, NegativeGradeThrowsException) {
+    EXPECT_THROW(letter_grade(-1), std::invalid_argument);
+}
+
+TEST(GradeUtilsTest, GradeBoundaryBetweenFAndD) {
+    EXPECT_EQ(letter_grade(59), 'F');
+    EXPECT_EQ(letter_grade(60), 'D');
+}
+
+TEST(GradeUtilsTest, GradeBoundaryBetweenDAndC) {
+    EXPECT_EQ(letter_grade(69), 'D');
+    EXPECT_EQ(letter_grade(70), 'C');
+}
+
+TEST(GradeUtilsTest, GradeBoundaryBetweenCAndB) {
+    EXPECT_EQ(letter_grade(79), 'C');
+    EXPECT_EQ(letter_grade(80), 'B');
+}
+
+TEST(GradeUtilsTest, GradeBoundaryBetweenBAndA) {
+    EXPECT_EQ(letter_grade(89), 'B');
+    EXPECT_EQ(letter_grade(90), 'A');
 }
