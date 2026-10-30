@@ -79,3 +79,6 @@ TEST(GradeUtilsTest, GradeBoundaryBetweenBAndA) {
     EXPECT_EQ(letter_grade(89), 'B');
     EXPECT_EQ(letter_grade(90), 'A');
 }
+TEST(GradeUtilsTest, GradeAboveMaximumThrowsException) {
+    EXPECT_THROW(letter_grade(101), std::invalid_argument);
+}
