@@ -80,7 +80,7 @@ La ejecución **#5**, correspondiente al commit "Agrega workflow de GitHub Actio
 
 _(Agregar también una captura de la ejecución #5 con los cinco pasos desplegados, en `docs/img/actions-pasos.png`.)_
 
-![Pasos de la ejecución exitosa](img/actions-pasos.png)
+![Pasos de la ejecución exitosa](![alt text](image.png))
 
 ## Ejecuciones anteriores fallidas
 
