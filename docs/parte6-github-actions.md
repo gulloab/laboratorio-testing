@@ -128,6 +128,101 @@ Establece un criterio común y objetivo de qué significa que un cambio esté bi
 
 Que el workflow es parte del repositorio y que su ubicación importa: tiene que estar en `.github/workflows/` en la raíz del repositorio, y las rutas de los pasos dependen de dónde está esa raíz. También que un archivo de workflow vacío produce ejecuciones fallidas, y que la lista de ejecuciones sirve como historial de cuándo empezó a funcionar la integración continua.
 
-## Fallo intencional en CI (Parte 11)
+## Fallo intencional en CI
 
-_(Se completa en la Parte 11.)_
+### Qué cambio se hizo para provocar el fallo
+
+En `tests/test_calculator.cpp`, en la prueba `CalculatorTest.AddPositiveNumbers` (línea 6), se cambió el valor esperado de `5` a `999`. El código de `add` no se tocó: el error está en la prueba, que ahora exige un resultado incorrecto.
+
+```cpp
+// Antes
+EXPECT_EQ(add(2, 3), 5);
+
+// Fallo intencional
+EXPECT_EQ(add(2, 3), 999);
+```
+
+### Qué pasó localmente
+
+Al compilar y ejecutar `./run_tests`, falló exactamente una de las 42 pruebas: `CalculatorTest.AddPositiveNumbers`. Las otras 41 pasaron.
+
+```text
+[ RUN      ] CalculatorTest.AddPositiveNumbers
+.../tests/test_calculator.cpp:6: Failure
+Expected equality of these values:
+  add(2, 3)
+    Which is: 5
+  999
+[  FAILED  ] CalculatorTest.AddPositiveNumbers (0 ms)
+
+[==========] 42 tests from 3 test suites ran. (0 ms total)
+[  PASSED  ] 41 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] CalculatorTest.AddPositiveNumbers
+
+ 1 FAILED TEST
+```
+
+El mensaje indica el archivo y la línea, la expresión evaluada (`add(2, 3)`), el valor que realmente devolvió (`5`) y el valor esperado (`999`).
+
+### Qué pasó en GitHub Actions
+
+Se subió el cambio con el commit "Introduce fallo intencional en prueba". Al ser un push a `main`, se activó el workflow **C++ testing** y la ejecución terminó en fallo (X roja), ejecución **[COMPLETAR: número de la ejecución fallida, por ejemplo #7]**.
+
+![Ejecución fallida en la lista de Actions](img/actions-fallo.png)
+
+El fallo se produjo en el paso **Run tests**. Los pasos anteriores (Checkout, Install dependencies, Configure CMake y Build) terminaron correctamente, lo que indica que el proyecto compiló bien y que lo único que impedía aprobar era la prueba.
+
+![Detalle del paso Run tests fallido](img/actions-fallo-detalle.png)
+
+### Qué mensaje mostró el workflow
+
+El log del paso **Run tests** mostró la misma salida de Google Test que se vio en local, seguida del error con el que GitHub marca el paso como fallido:
+
+```text
+[COMPLETAR: pegar aquí el extracto del log del paso "Run tests", desde la línea "[ RUN ] CalculatorTest.AddPositiveNumbers" hasta el final, incluyendo la línea del código de salida]
+```
+
+`./run_tests` terminó con un código de salida distinto de cero, y por eso GitHub marcó el paso, el trabajo y el workflow como fallidos.
+
+### Cómo se corrigió
+
+Se restauró el valor esperado original (`999` por `5`) en `tests/test_calculator.cpp`, se verificó localmente que las 42 pruebas pasaran y se subió la corrección con el commit "Corrige prueba fallida".
+
+```bash
+sed -i 's/EXPECT_EQ(add(2, 3), 999);/EXPECT_EQ(add(2, 3), 5);/' tests/test_calculator.cpp
+cd build
+make
+./run_tests
+cd ..
+git add .
+git commit -m "Corrige prueba fallida"
+git push
+```
+
+Resultado local tras la corrección:
+
+```text
+[==========] 42 tests from 3 test suites ran.
+[  PASSED  ] 42 tests.
+```
+
+### Evidencia del workflow exitoso después de corregir
+
+Tras el push de la corrección, el workflow volvió a ejecutarse y terminó con éxito (check verde): ejecución **[COMPLETAR: número y duración de la ejecución exitosa, por ejemplo #8, 40 s]**. La lista de ejecuciones muestra juntas la ejecución fallida y la recuperada.
+
+![Ejecución fallida seguida de la ejecución exitosa](img/actions-recuperado.png)
+
+### Preguntas de reflexión
+
+**1. ¿Por qué es útil ver una prueba fallar al menos una vez?**
+Porque demuestra que la prueba realmente es capaz de detectar un error. Una prueba que nunca ha fallado podría no estar verificando nada. Además, permite practicar la lectura del mensaje de fallo (archivo, línea, valor obtenido y esperado) antes de que ocurra un problema real, y comprobar que el sistema de integración continua avisa cuando algo está mal.
+
+**2. ¿Qué diferencia hay entre una prueba fallando localmente y una prueba fallando en CI?**
+Localmente el fallo ocurre en la máquina de una persona, con su entorno y posiblemente con cambios que aún no ha subido, y solo ella lo ve. En CI el fallo ocurre en un entorno limpio y compartido, sobre el código que realmente se subió, y queda visible para todo el equipo con su historial. Además, CI puede revelar errores que dependen del entorno y que localmente no aparecen, y puede impedir que un cambio defectuoso se integre.
+
+**3. ¿Por qué no se debería dejar código con pruebas fallidas en la rama principal?**
+Porque la rama principal es la base sobre la que trabaja todo el equipo y desde la que se hacen las entregas. Con pruebas fallidas ahí, todos heredan el problema, se pierde la certeza de que lo que está en `main` funciona y las nuevas fallas se vuelven difíciles de distinguir del ruido. Además, un CI que está siempre en rojo se acostumbra a ignorarse, y deja de cumplir su función.
+
+**4. ¿Qué aporta CI a la calidad del software?**
+Una verificación automática, repetible y objetiva de cada cambio, en un entorno limpio. Detecta los errores pronto, cuando son más baratos de corregir, deja un historial de cuándo se rompió o se arregló algo y establece un criterio común de calidad para el equipo: un cambio solo se considera bueno si compila y pasa las pruebas.
