@@ -2,7 +2,7 @@
 
 ## Qué se hizo
 
-Se creó la carpeta `laboratorio-testing` dentro del repositorio del curso, con la estructura `include/`, `src/`, `tests/` y `docs/`, y se agregó el archivo `CMakeLists.txt` que configura la compilación y descarga Google Test. El workflow de GitHub Actions se ubicó en `.github/workflows/testing.yml`, en la raíz del repositorio, porque GitHub solo detecta workflows en esa ruta.
+Se creó el repositorio `laboratorio-testing`, con la estructura `include/`, `src/`, `tests/` y `docs/`, y se agregó el archivo `CMakeLists.txt` que configura la compilación y descarga Google Test. El workflow de GitHub Actions se ubicó en `.github/workflows/testing.yml`, en la raíz del repositorio, porque GitHub solo detecta workflows en esa ruta.
 
 ## Qué es CMake
 
@@ -24,11 +24,11 @@ Una prueba es repetible si, ejecutada varias veces en las mismas condiciones y e
 
 | Ruta | Propósito |
 |---|---|
-| `laboratorio-testing/CMakeLists.txt` | Configuración de compilación, Google Test y cobertura |
-| `laboratorio-testing/include/` | Encabezados (`calculator.h`, `string_utils.h`, `grade_utils.h`) |
-| `laboratorio-testing/src/` | Implementaciones (`.cpp`) |
-| `laboratorio-testing/tests/` | Pruebas unitarias con Google Test |
-| `laboratorio-testing/docs/` | Documentación en Markdown |
+| `CMakeLists.txt` | Configuración de compilación, Google Test y cobertura |
+| `include/` | Encabezados (`calculator.h`, `string_utils.h`, `grade_utils.h`) |
+| `src/` | Implementaciones (`.cpp`) |
+| `tests/` | Pruebas unitarias con Google Test |
+| `docs/` | Documentación en Markdown |
 | `.github/workflows/testing.yml` | Workflow de integración continua |
 
 ## Preguntas de reflexión
