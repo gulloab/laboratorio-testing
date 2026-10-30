@@ -2,7 +2,132 @@
 
 ## Mini reto de testing
 
-_(Se completa en la Parte 12.)_
+### Función implementada
+
+Se agregó la función `is_valid_grade`, que indica si una nota está dentro del rango permitido de 0 a 100, ambos incluidos. Es la validación que `letter_grade` aplica por dentro antes de convertir una nota, pero expuesta como función propia que devuelve `true` o `false`.
+
+Archivos modificados:
+
+- `include/grade_utils.h`: se agregó la declaración.
+- `src/grade_utils.cpp`: se agregó la implementación.
+- `tests/test_grade_utils.cpp`: se agregaron las pruebas.
+
+```cpp
+// include/grade_utils.h
+bool is_valid_grade(int grade);
+```
+
+```cpp
+// src/grade_utils.cpp
+bool is_valid_grade(int grade) {
+    return grade >= 0 && grade <= 100;
+}
+```
+
+### Casos de prueba diseñados
+
+Se diseñaron seis pruebas, una por cada tipo de caso que pide la actividad:
+
+| Prueba (`GradeUtilsTest.`) | Entrada | Resultado esperado | Tipo de caso |
+|---|---:|---|---|
+| `ValidGradeNormalValue` | 85 | `true` | Normal válido |
+| `InvalidGradeNormalValue` | 150 | `false` | Normal inválido |
+| `ValidGradeLowerBound` | 0 | `true` | Borde inferior válido |
+| `ValidGradeUpperBound` | 100 | `true` | Borde superior válido |
+| `InvalidGradeJustBelowLowerBound` | -1 | `false` | Justo debajo del borde inferior |
+| `InvalidGradeJustAboveUpperBound` | 101 | `false` | Justo encima del borde superior |
+
+```cpp
+TEST(GradeUtilsTest, ValidGradeNormalValue) {
+    EXPECT_TRUE(is_valid_grade(85));
+}
+
+TEST(GradeUtilsTest, InvalidGradeNormalValue) {
+    EXPECT_FALSE(is_valid_grade(150));
+}
+
+TEST(GradeUtilsTest, ValidGradeLowerBound) {
+    EXPECT_TRUE(is_valid_grade(0));
+}
+
+TEST(GradeUtilsTest, ValidGradeUpperBound) {
+    EXPECT_TRUE(is_valid_grade(100));
+}
+
+TEST(GradeUtilsTest, InvalidGradeJustBelowLowerBound) {
+    EXPECT_FALSE(is_valid_grade(-1));
+}
+
+TEST(GradeUtilsTest, InvalidGradeJustAboveUpperBound) {
+    EXPECT_FALSE(is_valid_grade(101));
+}
+```
+
+### Por qué se escogieron esos casos
+
+El rango de entrada se divide en tres zonas: las notas válidas (de 0 a 100), las inválidas por debajo (menores que 0) y las inválidas por arriba (mayores que 100). Se probó un valor representativo de cada zona y los valores donde la respuesta cambia, que son los lugares donde suelen esconderse los errores.
+
+- **85 y 150** son los casos normales: un valor cómodo dentro del rango y uno claramente fuera. Comprueban el comportamiento general, y 150 además detectaría un `||` escrito en lugar de `&&`, porque con `||` la función aceptaría cualquier número.
+- **0 y 100** son los extremos válidos. Detectarían un `>` en lugar de `>=` en el límite inferior, o un `<` en lugar de `<=` en el superior, que rechazarían por error esas dos notas.
+- **-1 y 101** son los vecinos inmediatos fuera del rango. Detectarían un límite corrido, por ejemplo `grade >= -1` o `grade <= 101`, que aceptaría una nota inválida. Una prueba con un valor lejano, como 150, no lo detectaría.
+
+Cada uno de esos errores comunes de comparación haría fallar al menos una de las seis pruebas.
+
+### Resultado de las pruebas
+
+Las seis pruebas nuevas, extraídas de la ejecución completa de `./run_tests`:
+
+```text
+[ RUN      ] GradeUtilsTest.ValidGradeNormalValue
+[       OK ] GradeUtilsTest.ValidGradeNormalValue (0 ms)
+[ RUN      ] GradeUtilsTest.InvalidGradeNormalValue
+[       OK ] GradeUtilsTest.InvalidGradeNormalValue (0 ms)
+[ RUN      ] GradeUtilsTest.ValidGradeLowerBound
+[       OK ] GradeUtilsTest.ValidGradeLowerBound (0 ms)
+[ RUN      ] GradeUtilsTest.ValidGradeUpperBound
+[       OK ] GradeUtilsTest.ValidGradeUpperBound (0 ms)
+[ RUN      ] GradeUtilsTest.InvalidGradeJustBelowLowerBound
+[       OK ] GradeUtilsTest.InvalidGradeJustBelowLowerBound (0 ms)
+[ RUN      ] GradeUtilsTest.InvalidGradeJustAboveUpperBound
+[       OK ] GradeUtilsTest.InvalidGradeJustAboveUpperBound (0 ms)
+```
+
+Resumen de la suite completa:
+
+```text
+[----------] 24 tests from GradeUtilsTest (0 ms total)
+[==========] 48 tests from 3 test suites ran. (0 ms total)
+[  PASSED  ] 48 tests.
+```
+
+`GradeUtilsTest` pasó de 18 a 24 pruebas, y el total de 42 a 48. Durante la compilación aparecieron avisos de `libgcov` sobre datos de cobertura de compilaciones anteriores; no afectan el resultado de las pruebas.
+
+### Subida a GitHub
+
+Sí, los cambios se subieron a GitHub con el commit "Agrega is_valid_grade y sus pruebas" (`dcfa4cf`), mediante un `git push` a la rama `main`.
+
+### Resultado en GitHub Actions
+
+Al ser un push a `main`, se activó el workflow **C++ testing**. **[COMPLETAR: número de la ejecución, resultado (éxito o fallo) y duración, por ejemplo "#10, éxito, 41 s"]**
+
+![Ejecución de GitHub Actions tras el mini reto](img/actions-mini-reto.png)
+
+### Preguntas de reflexión
+
+**1. ¿Cuál fue el caso más obvio de probar?**
+El valor 85: una nota válida y normal, en medio del rango. Es el caso en el que cualquiera pensaría primero, y casi cualquier implementación lo resuelve bien, lo que lo hace necesario pero poco revelador.
+
+**2. ¿Cuál fue el caso borde más importante?**
+Los límites exactos 0 y 100 y sus vecinos -1 y 101. Si hay que elegir uno, el 101: es el valor justo encima del límite superior, y fue el caso que no estaba cubierto en las pruebas de `letter_grade` hasta la Parte 9, a pesar de que la cobertura de líneas ya era 100%.
+
+**3. ¿Qué error podría aparecer si no se prueban los valores `0` y `100`?**
+Que la implementación use `>` y `<` en lugar de `>=` y `<=`. Entonces `is_valid_grade(0)` y `is_valid_grade(100)` devolverían `false`, y se rechazarían notas perfectamente válidas (un 0 o un 100 reales). Las pruebas con 85 y con 150 pasarían igual, y el error pasaría inadvertido.
+
+**4. ¿Qué diferencia hay entre probar un valor como `50` y probar valores como `-1`, `0`, `100` y `101`?**
+Un valor como 50 es representativo del interior del rango: casi cualquier implementación razonable lo acepta, así que una prueba con él confirma el caso general. Los valores -1, 0, 100 y 101 están justo en los puntos donde la respuesta cambia de `false` a `true` y de `true` a `false`. Ahí se concentran los errores de comparación (un `>` por un `>=`, un límite corrido en uno), que 50 nunca expondría.
+
+**5. ¿Qué aprendió sobre diseñar pruebas?**
+Que conviene diseñarlas a partir del comportamiento esperado y dividiendo el rango de entradas en zonas (válida, inválida por debajo e inválida por arriba), eligiendo un valor típico de cada zona y los valores exactos de los límites con sus vecinos. También que pensar en qué error concreto podría tener el código ("¿y si alguien escribió `>` en vez de `>=`?") ayuda a decidir qué casos escribir, y que una cobertura alta no sustituye ese razonamiento.
 
 ## Reflexión final
 
